@@ -2,11 +2,9 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-BOT_TOKEN = "7031125260:AAEHrZnuqnppKQSXPYdmDaAmnMRQFVBSWGE"  # вставь сюда свой токен
+BOT_TOKEN = ""
 
-WEB_APP_URL = "http://6034a861-dd49-43f0-9cf4-8be4735aba34"
-
-#WEB_APP_URL = "https://05b4-2a0c-16c0-515-6d-00-68b3.ngrok-free.app"  # локальный адрес игры
+WEB_APP_URL = ""
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
