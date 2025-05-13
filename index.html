@@ -17,6 +17,10 @@
     }
 
     canvas {
+      width: 90vw;
+      height: 70vh;
+      max-width: 400px;
+      max-height: 600px;
       border: 3px solid #fff;
       background-color: #000;
       border-radius: 10px;
@@ -129,7 +133,7 @@
   </div>
 
 
-  <canvas id="gameCanvas" width="350" height="500"></canvas>
+  <canvas id="gameCanvas"></canvas>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
@@ -138,9 +142,15 @@
     const settingsPanel = document.getElementById('settingsPanel');
     const gameOverPanel = document.getElementById('gameOverPanel');
     const resultText = document.getElementById('resultText');
-
     const difficultySelect = document.getElementById('difficulty');
     const paddleColorSelect = document.getElementById('paddleColor');
+
+    function resizeCanvas() {
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+    }
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
 
     const paddleWidth = 70, paddleHeight = 10;
     let player = { x: canvas.width / 2 - paddleWidth / 2, y: canvas.height - 20 };
@@ -203,7 +213,6 @@
       ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.3})`; // мягкое свечение
       ctx.fill();
       }
-
 
       // Рисуем мяч
       ctx.fillStyle = "#fff";
@@ -268,9 +277,11 @@
 
     if (playerScore > aiScore) {
       resultText.textContent = "🎉 Победа!";
+      resultText.style.color = "#bf75ff";
       localStorage.setItem("playerWins", playerWins + 1);
     } else {
-      resultText.textContent = "💥 Поражение!";
+      resultText.textContent = "💥 Лох!";
+      resultText.style.color = "#ff75dd";
       localStorage.setItem("aiWins", aiWins + 1);
     }
 
