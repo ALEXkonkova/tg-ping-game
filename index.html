@@ -210,7 +210,7 @@
       const alpha = i / trail.length;
       ctx.beginPath();
       ctx.arc(t.x, t.y, ballSize, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.3})`; // мягкое свечение
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.3})`; // свечение
       ctx.fill();
       }
 
@@ -280,7 +280,7 @@
       resultText.style.color = "#bf75ff";
       localStorage.setItem("playerWins", playerWins + 1);
     } else {
-      resultText.textContent = "💥 Лох!";
+      resultText.textContent = "💥 Поражение!";
       resultText.style.color = "#ff75dd";
       localStorage.setItem("aiWins", aiWins + 1);
     }
