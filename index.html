@@ -192,6 +192,15 @@
 
       ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Рисуем сетку
+      ctx.strokeStyle = "#fff";
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(canvas.width / 2, 0);
+      ctx.lineTo(canvas.width / 2, canvas.height);
+      ctx.stroke();
+      ctx.setLineDash([]);
 
       // Рисуем игрока и AI
       ctx.fillStyle = paddleColor;
