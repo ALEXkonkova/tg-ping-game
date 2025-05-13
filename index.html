@@ -196,11 +196,16 @@
       //----------------------- СЕТКА
       ctx.strokeStyle = "#fff";
       ctx.lineWidth = 2;
-      ctx.setLineDash([10, 10]); 
-      ctx.beginPath();
-      ctx.moveTo(canvas.width / 2, 0);
-      ctx.lineTo(canvas.width / 2, canvas.height);
-      ctx.stroke();
+      ctx.setLineDash([10, 10]);
+      
+      const numLines = 10;
+      for (let i = 1; i < numLines; i++) {
+        const y = (canvas.height / numLines) * i;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
       ctx.setLineDash([]);
       
 
