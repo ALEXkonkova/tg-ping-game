@@ -136,6 +136,39 @@
   <canvas id="gameCanvas"></canvas>
 
   <script>
+
+  const pathname = window.location.pathname;
+  const roomId = pathname.split("/").filter(p => p.length > 0).pop();
+
+  if (roomId && roomId !== "index.html") {
+    console.log("Подключаемся к комнате:", roomId);
+
+    const socket = new WebSocket("wss://your-server.com"); // Замени на адрес своего WebSocket-сервера
+
+    socket.onopen = () => {
+      socket.send(JSON.stringify({ type: "join", roomId }));
+    };
+
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      console.log("Пришло сообщение:", message);
+
+      // Здесь добавь обработку игровых событий (позиции, действия и т.п.)
+    };
+
+    socket.onclose = () => {
+      console.log("Соединение закрыто");
+    };
+
+    socket.onerror = (error) => {
+      console.error("Ошибка WebSocket:", error);
+    };
+  }
+
+
+
+
+
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const scoreDisplay = document.getElementById('score');
@@ -203,7 +236,7 @@
       ctx.lineTo(canvas.width, canvas.height / 2);
       ctx.stroke();
       ctx.setLineDash([]);
-      
+
 
       // Рисуем игрока и AI
       ctx.fillStyle = paddleColor;
