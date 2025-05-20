@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Ping Pong</title>
+  <style>
+    body {
+      margin: 0;
+      background: linear-gradient(to right, #232526, #414345);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+      font-family: Arial, sans-serif;
+      position: relative;
+    }
+
+    canvas {
+      width: 90vw;
+      height: 70vh;
+      max-width: 400px;
+      max-height: 600px;
+      border: 3px solid #fff;
+      background-color: #000;
+      border-radius: 10px;
+    }
+
+    #score {
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      z-index: 10;
+    }
+
+    #gameOverPanel, #settingsPanel {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #1e1e1e;
+      padding: 20px 30px;
+      border-radius: 15px;
+      border: 2px solid #fff;
+      text-align: center;
+      z-index: 20;
+    }
+
+    #gameOverPanel {
+      display: none;
+    }
+
+    #gameOverPanel h2 {
+      margin-bottom: 15px;
+      color: #00ffcc;
+    }
+
+    #gameOverPanel button,
+    #settingsPanel button,
+    #resultsPanel button,
+    select {
+      margin-top: 10px;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      background-color: #b0dbff;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #gameOverPanel button:hover,
+    #settingsPanel button:hover,
+    #resultsPanel button:hover {
+      background-color: #d4ecff;
+      box-shadow: 0 0 8px #b0dbff;
+      transition: 0.2s ease;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="score" style="display: none;">🧍 Игрок: 0 | 🤖 AI: 0</div>
+
+  <div id="settingsPanel">
+    <h2>Настройки игры</h2>
+
+    <label>Сложность:
+      <select id="difficulty">
+        <option value="easy">Лёгкий</option>
+        <option value="medium" selected>Средний</option>
+        <option value="hard">Сложный</option>
+      </select>
+    </label>
+
+    <label>Цвет ракетки игрока:
+      <select id="paddleColor">
+        <option value="#0099FF" selected>Голубой</option>
+        <option value="#99FF00">Зелёный</option>
+        <option value="#990099">Фиолетовый</option>
+        <option value="#FF0099">Розовый</option>
+        <option value="#FF9900">Оранжевый</option>
+      </select>
+    </label>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 10px;">
+      <button onclick="startGame()">Начать игру</button>
+      <button onclick="showResults()">Итоги</button>
+    </div>
+
+
+
+  </div>
+
+  <div id="gameOverPanel">
+    <h2 id="resultText">Вы выиграли!</h2>
+    <button onclick="restartGame()">Играть снова</button>
+  </div>
+
+  <div id="resultsPanel" style="display: none; position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%); background: #1e1e1e; padding: 20px 30px;
+  border-radius: 15px; border: 2px solid #fff; text-align: center; z-index: 20; color: white;">
+    <h2>🏁 Итоги матчей</h2>
+    <p>👤 Побед игрока: <span id="playerWins">0</span></p>
+    <p>🤖 Побед AI: <span id="aiWins">0</span></p>
+    <button onclick="hideResults()">Назад</button>
+  </div>
+
+
+  <canvas id="gameCanvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreDisplay = document.getElementById('score');
+    const settingsPanel = document.getElementById('settingsPanel');
+    const gameOverPanel = document.getElementById('gameOverPanel');
+    const resultText = document.getElementById('resultText');
+    const difficultySelect = document.getElementById('difficulty');
+    const paddleColorSelect = document.getElementById('paddleColor');
+
+    function resizeCanvas() {
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+    }
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    const paddleWidth = 70, paddleHeight = 10;
+    let player = { x: canvas.width / 2 - paddleWidth / 2, y: canvas.height - 20 };
+    let ai = { x: canvas.width / 2 - paddleWidth / 2, y: 10 };
+    const ballSize = 10;
+    let ball = { x: canvas.width / 2, y: canvas.height / 2, dx: 3, dy: 3 };
+
+    let playerScore = 0, aiScore = 0;
+    let gameOver = false;
+    let aiSpeed = 2.5;
+    let paddleColor = "#00ff99";
+
+    canvas.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      player.x = e.clientX - rect.left - paddleWidth / 2;
+    });
+
+    let trail = [];
+    const maxTrailLength = 10;
+
+
+    function startGame() {
+      paddleColor = paddleColorSelect.value;
+      setDifficulty(difficultySelect.value);
+      scoreDisplay.style.display = "block";
+      settingsPanel.style.display = "none";
+      resetBall();
+      gameLoop();
+    }
+
+    function setDifficulty(level) {
+      if (level === "easy") aiSpeed = 2;
+      else if (level === "medium") aiSpeed = 2.5;
+      else if (level === "hard") aiSpeed = 3.5;
+    }
+
+    function gameLoop() {
+      if (gameOver) return;
+
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      //----------------------- СЕТКА
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([10, 10]);
+
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height / 2);
+      ctx.lineTo(canvas.width, canvas.height / 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+
+      // Рисуем игрока и AI
+      ctx.fillStyle = paddleColor;
+      ctx.fillRect(player.x, player.y, paddleWidth, paddleHeight);
+
+      ctx.fillStyle = "#ff5050";
+      ctx.fillRect(ai.x, ai.y, paddleWidth, paddleHeight);
+
+      // Добавляем текущую позицию мяча в хвост -------------------------------------------
+      trail.push({ x: ball.x, y: ball.y });
+      if (trail.length > maxTrailLength) trail.shift();
+
+      // Рисуем хвост-----------------------------------------------------
+      for (let i = 0; i < trail.length; i++) {
+      const t = trail[i];
+      const alpha = i / trail.length;
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, ballSize, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.3})`; // свечение
+      ctx.fill();
+      }
+
+      // Рисуем мяч
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ballSize, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Движение мяча
+      ball.x += ball.dx;
+      ball.y += ball.dy;
+
+      if (ball.x <= ballSize || ball.x >= canvas.width - ballSize) ball.dx *= -1;
+
+      // AI движение
+      if (ball.x > ai.x + paddleWidth / 2) ai.x += aiSpeed;
+      else ai.x -= aiSpeed;
+
+      // Отскоки
+      if (ball.y + ballSize >= player.y &&
+          ball.x >= player.x && ball.x <= player.x + paddleWidth) {
+        ball.dy *= -1;
+        ball.y = player.y - ballSize;
+      }
+
+      if (ball.y - ballSize <= ai.y + paddleHeight &&
+          ball.x >= ai.x && ball.x <= ai.x + paddleWidth) {
+        ball.dy *= -1;
+        ball.y = ai.y + paddleHeight + ballSize;
+      }
+
+      // Голы
+      if (ball.y > canvas.height) {
+        aiScore++;
+        checkGameOver();
+        resetBall();
+      }
+
+      if (ball.y < 0) {
+        playerScore++;
+        checkGameOver();
+        resetBall();
+      }
+
+      scoreDisplay.textContent = `🧍 Игрок: ${playerScore} | 🤖 AI: ${aiScore}`;
+      requestAnimationFrame(gameLoop);
+    }
+
+    function resetBall() {
+      ball = {
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        dx: (Math.random() > 0.5 ? 3 : -3),
+        dy: (Math.random() > 0.5 ? 3 : -3)
+      };
+    }
+
+    function checkGameOver() {
+  if (playerScore >= 5 || aiScore >= 5) {
+    gameOver = true;
+    const playerWins = parseInt(localStorage.getItem("playerWins") || "0");
+    const aiWins = parseInt(localStorage.getItem("aiWins") || "0");
+
+    if (playerScore > aiScore) {
+      resultText.textContent = "🎉 Победа!";
+      resultText.style.color = "#bf75ff";
+      localStorage.setItem("playerWins", playerWins + 1);
+    } else {
+      resultText.textContent = "💥 Поражение!";
+      resultText.style.color = "#ff75dd";
+      localStorage.setItem("aiWins", aiWins + 1);
+    }
+
+    gameOverPanel.style.display = "block";
+  }
+}
+
+
+function showResults() {
+  document.getElementById("playerWins").textContent = localStorage.getItem("playerWins") || "0";
+  document.getElementById("aiWins").textContent = localStorage.getItem("aiWins") || "0";
+  settingsPanel.style.display = "none";
+  document.getElementById("resultsPanel").style.display = "block";
+}
+
+function hideResults() {
+  document.getElementById("resultsPanel").style.display = "none";
+  settingsPanel.style.display = "block";
+}
+
+    function restartGame() {
+  playerScore = aiScore = 0;
+  gameOver = false;
+  gameOverPanel.style.display = "none";
+  settingsPanel.style.display = "block";
+  scoreDisplay.style.display = "none";
+  document.getElementById("resultsPanel").style.display = "none";
+}
+
+  </script>
+</body>
+</html>
