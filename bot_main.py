@@ -2,11 +2,10 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-BOT_TOKEN = "7031125260:AAHWfwygmsCXWojp8g3A3DD708kT-f15s8c"  # вставь сюда свой токен
+BOT_TOKEN = ""  # вставь сюда свой токен
 
-WEB_APP_URL = "https://alexkonkova.github.io/tg-ping-game/"
+WEB_APP_URL = ""
 
-#WEB_APP_URL = "http://localhost:5000"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
